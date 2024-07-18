@@ -1,0 +1,124 @@
+#include <iostream>
+using namespace std;
+
+class GATE {
+protected:
+	bool x, y, z;
+public:
+	void inputSet(bool xx, bool yy);
+	GATE() : x(false), y(false), z(false) { }
+
+};
+
+void GATE::inputSet(bool xx, bool yy)
+{
+	x = xx, y = yy;
+}
+
+class ANDGate :public GATE {
+public:
+
+	void op()
+	{
+		z = x && y;
+		cout << z << "\n";
+	}
+
+};
+
+class ORGate :public GATE {
+public:
+	void op() {
+		z = x || y;
+		cout << z << "\n";
+	}
+
+};
+class XORGate :public GATE {
+public:
+	void op()
+	{
+		z = x ^ y;
+		cout << z << "\n";
+	}
+
+
+};
+
+
+class Point {
+	int x, y;
+public:
+	Point(int xx, int yy) :x(xx), y(yy) {}
+
+	int Getx() { return x; }
+	int Gety() { return y; }
+
+};
+
+class Shape {
+	Point cp, lp;
+public:
+	Shape(int x1, int y1, int x2, int y2) : cp(x1, y1), lp(x2, y2) {}
+	virtual void draw() {
+		cout << cp.Getx() << " " << cp.Gety() << " " << lp.Getx() << " " << lp.Gety();
+	}
+
+};
+class Line :public Shape {
+public:
+	Line(int start_x, int start_y, int end_x, int end_y) : Shape(start_x, start_y, end_x, end_y) {}
+	void draw()
+	{
+		Shape::draw();
+		cout << " : 직선을 출력" << "\n";
+	}
+};
+
+
+class Circle :public Shape {
+
+public:
+	Circle(int start_x, int start_y, int end_x, int end_y) : Shape(start_x, start_y, end_x, end_y) {}
+	void draw()
+	{
+		Shape::draw();
+		cout << " : 원을 출력" << "\n";
+	}
+};
+
+
+void P8_1()
+{
+	ANDGate And;
+	ORGate Or;
+	XORGate Xor;
+	And.inputSet(true, false);
+	And.op();
+	And.inputSet(true, true);
+	And.op();
+	Or.inputSet(true, false);
+	Or.op();
+	Or.inputSet(true, true);
+	Or.op();
+	Xor.inputSet(true, false);
+	Xor.op();
+	Xor.inputSet(true, true);
+	Xor.op();
+
+}
+void P8_2()
+{
+	Circle a(1, 1, 5, 5); 
+	Line b(5, 5, 9, 9); 
+	a.draw();
+	b.draw();
+}
+
+
+
+int main()
+{
+	P8_1();
+	P8_2();
+}
