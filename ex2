@@ -1,0 +1,106 @@
+·8번 힌트
+사용자 입력은 getline() 사용 string 객체(변수)에 저장
+알파벳 찾는 방법 
+	if ((text[i] >= 'a' && text[i] <= 'z') || (text[i] >= 'A' && text[i] <= 'Z'))
+숫자 찾는 방법 
+	if (text[i] >=‘1' && text[i] <= ‘9')
+빈칸 찾는 방법 
+	if (text[i] ==‘ ‘)
+
+·9번 힌트
+사용자 입력은 getline() 사용 string 객체(변수)에 저장
+
+·13번 힌트
+string 클래스의 replace( ), find() 멤버함수 이용 
+각 함수 사용 방법 인터넷서 찾아볼 것.
+
+#include<iostream>
+#include<string>
+using namespace std;
+
+// 8번
+void p8() {
+	string text;
+	int a = 0;
+	int num = 0;
+	int b = 0;
+
+	cout << "문자열을 입력하시오: ";
+	getline(cin, text);
+
+	for (int i = 0; i < signed(text.length()); i++) {
+
+		if ((text[i] >= 'a' && text[i] <= 'z') || (text[i] >= 'A' && text[i] <= 'Z')) {
+			a++;
+		}
+
+		if (text[i] >= '1' && text[i] <= '9') {
+			num++;
+		}
+
+		if (text[i] == ' ') {
+			b++;
+		}
+		
+	}
+	cout << "알파벳 글자의 개수는 " << a << "개, " << "숫자의 개수는 " << num << "개, " << "공백 문자의 개수는 " << b << "개 입니다.\n\n";
+}
+
+// 9번
+void p9() {
+	string text;
+
+	int text_1 = 1;
+	int len = 1;
+
+	cout << "문자열을 입력하시오: ";
+
+	getline(cin, text);
+
+	len = text.length();
+
+	if (text[0] == ' ') {
+		text_1 = 0;
+	}
+
+	for (int i = 0; i < len; i++) {
+		if ((text[i] == ' ') && (text[i + 1] != ' ')) {
+			text_1++;
+		}
+	}
+	if (text[len - 1] == ' ') {
+		text_1--;
+	}
+	cout << "단어의 개수는 " << text_1 << "개 입니다.\n";
+}
+
+// 13번
+void p13() {
+	string text;
+	string find_;
+	string change;
+	int a;
+
+	cout << "\n텍스트를 입력하시오(최대 100글자): \n" << "=>";
+	getline(cin, text);
+
+	cout << "\n";
+	cout << "찾을 문자열을 입력하시오: ";
+	getline(cin, find_);
+
+	cout << "바꿀 문자열을 입력하시오: ";
+	getline(cin, change);
+
+	a = text.find(find_);
+	text.replace(a, find_.length(), change);
+
+	cout << "\n";
+	cout << "=>" << text;
+}
+int  main() {
+	p8();
+	p9();
+	p13();
+
+	return 0;
+}
