@@ -1,0 +1,74 @@
+#include<iostream>
+using namespace std;
+
+class Fruitseller {
+private:
+	int apple_price; 
+	int apple_number; 
+	int seller_money;  
+public:
+	Fruitseller(int price, int number, int money);
+	int saleApples(int money);
+	void ShowSalesResult();
+};
+class Fruitbuyer {
+private:
+	int buyer_money; 
+	int buyer_applenumber; 
+public:
+	Fruitbuyer(int money, int number);
+	void BuyApples(Fruitseller& seller, int money);
+	void ShowBuyResult();
+};
+Fruitseller::Fruitseller(int price, int number, int money) {
+	apple_price = price;
+	apple_number = number;
+	seller_money = money;
+}
+int
+Fruitseller::saleApples(int money) {
+	int number = money / apple_price;
+	seller_money += money;
+	apple_number -= number;
+
+	return number;
+}
+void
+Fruitseller::ShowSalesResult() {
+	cout << "남은 사과: " << apple_number << endl;
+	cout << "판매 수익: " << seller_money << endl;
+}
+
+Fruitbuyer::Fruitbuyer(int money, int number) {
+	buyer_money = money;
+	buyer_applenumber = number;
+}
+void
+Fruitbuyer::BuyApples(Fruitseller& seller, int money) {
+	buyer_applenumber += seller.saleApples(money);
+	buyer_money -= money;
+}
+void
+Fruitbuyer::ShowBuyResult() {
+	cout << "현재 잔액: " << buyer_money << endl;
+	cout << "사과 개수: " << buyer_applenumber << endl;
+}
+
+void p3(void) {
+	Fruitseller seller(1000, 20, 0);    
+	Fruitbuyer buyer(5000, 0);    
+
+	buyer.BuyApples(seller, 2000);
+
+	cout << "과일 판매자의 현황" << endl;
+	seller.ShowSalesResult();
+	cout << "\n";
+
+	cout << "과일 구매자의 현황" << endl;
+	buyer.ShowBuyResult();
+
+}
+int main() {
+	p3();
+	return 0;
+}
