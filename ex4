@@ -1,0 +1,66 @@
+#include<iostream>
+#include<stack>
+#include<queue>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+class Box
+{
+private: 
+   int w=1, h=1, w_h=1;
+public:
+   
+   Box(int a, int b, int c)
+   {
+      w = a;
+      h = b;
+      w_h = c;
+   }
+   Box()
+   {
+      w = 1;
+      h = 1;
+      w_h = 1;
+   }
+   
+   int getVolume()
+   {
+      return w * h * w_h;
+
+   };
+   void print()
+   {
+      cout<< "밑면적: "<< w*h << " " << "상자 높이: "<< h << " " << "부피: "<< getVolume() << " " << "\n";
+   };
+
+};
+
+void p2()
+{
+   Box b1(2, 3, 4), b2(4, 5, 6);
+   Box b3;
+   
+   cout << "========================================" << endl;
+   cout << "박스 1 "; b1.print();
+   cout << "박스 2 "; b2.print();
+   cout << "박스 3 "; b3.print();
+   cout << "========================================" << endl;
+   int vb1 = b1.getVolume();
+   int vb2 = b2.getVolume();
+   int vb3 = b3.getVolume();
+   if (vb1 > vb2 && vb1 > vb3)
+   {
+      cout << "박스1의 부피가 가장큽니다 : " << vb1;
+   }
+   else if (vb2 > vb1 && vb2 > vb3)
+   {
+      cout << "박스 2의 부피가 가장큽니다: " << vb2;
+
+   }
+   else
+      cout << "박스 3의 부피가 가장큽니다: " << vb3;
+}
+int main()
+{
+   p2();
+}
