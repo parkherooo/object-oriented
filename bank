@@ -1,0 +1,326 @@
+#include <iostream>
+#include <cstring>
+
+using namespace std;
+const int NAME_LEN = 20;// 이름의 길이의 최대 값을 20으로 선언한다.
+
+// 프로그램 사용자의 선택 메뉴
+enum { MAKE = 1, DEPOSIT, WITHDRAW, INQUIRE, EXIT };//열거형으로 make가 1이므로 뒤는 순서대로 2,3,4,5로 저장된다.
+
+
+// 신용등급
+enum { LEVEL_A = 7, LEVEL_B = 4, LEVEL_C = 2 };//열거형으로 LEVEL_A = 7, LEVEL_B = 4, LEVEL_C = 2로 저장된다.
+
+// 계좌의 종류
+enum { NORMAL = 1, CREDIT = 2 };//열거형으로 NORMAL = 1, CREDIT = 2로 저장된다.
+
+/*
+ * 클래스 이름: Account
+ * 클래스 유형: Entity 클래스
+ */
+
+class Account
+{
+private:
+	int accID;	//계좌번호
+	int balance;	//잔액
+	char* cusName;	//고객이름
+
+public:
+	Account(int ID, int money, char* name);
+	Account(const Account& ref);	
+
+	int GetAccID() const;
+	virtual void Deposit(int money);
+	int Withdraw(int money);
+	void ShowAccInfo() const;
+	~Account();
+};
+
+Account::Account(int ID, int money, char* name)// 생성자
+	: accID(ID), balance(money) //  입력받은 id 값을 클래스 accID에 저장, 동일하게 입력받은 money 값을 클래스 balance에 저장
+{
+	cusName = new char[strlen(name) + 1];//cusName 변수에 입력받은 name의 길이 +1 위치를 cusName에 생성한다.
+	strcpy_s(cusName, (strlen(name) + 1), name);
+}
+
+Account::Account(const Account& ref)//상수로 선언된 참조자. 복사 생성자.
+	: accID(ref.accID), balance(ref.balance)// 복사하고자 하는 아이디, 잔액 값을 현재 accID, balance에 저장, 
+{
+	cusName = new char[strlen(ref.cusName) + 1];
+	strcpy_s(cusName, (strlen(ref.cusName) + 1), ref.cusName);
+}
+
+int Account::GetAccID() const { return accID; }// 계좌번호(ID)를 불러올 때 계좌 변수인 accID의 값을 반환한다. 수정하지 않을 것이므로 const 선언
+
+void Account::Deposit(int money) //입금하는 함수
+{
+	balance += money; // 입금 하려는 값인 money값을 현재 잔고에 추가하여 넣어준다(입금)
+}
+
+int Account::Withdraw(int money) // 출금액 반환, 부족 시 0 반환
+{
+	if (balance < money)// 잔액이 출금하고자 하는 값(money)보다 작을 시
+		return 0;//출금이 불가능 하므로 0을 반환한다.
+
+	balance -= money;// 출금이 가능한 잔액이라면 잔액에서 출금하고자 하는 값을 뺀다.
+	return money;//출금액이 얼마인지 반환한다.
+}
+
+void Account::ShowAccInfo() const// 현재 계좌에 관한 정보를 출력하는 함수.
+{
+	cout << "계좌ID: " << accID << endl;
+	cout << "이  름: " << cusName << endl;
+	cout << "잔  액: " << balance << endl;
+	//계좌, 이름, 잔액을 출력한다.
+}
+
+Account::~Account()//소멸자
+{
+	delete[]cusName;//cusName을 삭제한다.
+}
+
+
+/*
+ * 클래스 이름: NormalAccount
+ * 클래스 유형: Entity 클래스
+ */
+
+class NormalAccount : public Account//Account 자식클래스
+{
+private:
+	int interRate;   // 이자율 %단위
+public:
+	NormalAccount(int ID, int money, char* name, int rate) //생성자
+		: Account(ID, money, name), interRate(rate)//입력 받은 값을 부모 클래스에 저장,interRate 값은 rate에 저장
+	{  }
+
+	virtual void Deposit(int money)//가상함수
+	{
+		Account::Deposit(money);        // 원금추가, 부모클래스 Deposit에 money 원금추가 저장
+		Account::Deposit(money * (interRate / 100.0));   // 이자추가, 부모클래스 Deposit에 money 이자추가 저장
+	}
+};
+
+
+/*
+ * 클래스 이름: HighCreditAccount
+ * 클래스 유형: Entity 클래스
+ */
+
+class HighCreditAccount : public NormalAccount//NormalAccount 자식클래스 
+{
+private:
+	int specialRate;//특별이자 변수
+public:
+	HighCreditAccount(int ID, int money, char* name, int rate, int special)//생성자
+		: NormalAccount(ID, money, name, rate), specialRate(special)////입력 받은 값을 부모 클래스에 저장,specialRate 값은 special에 저장
+	{  }
+
+	virtual void Deposit(int money)//가상함수
+	{
+		NormalAccount::Deposit(money);        // 원금과 이자추가, 부모클래스 Deposit에 money 원금과 이자추가 저장
+		Account::Deposit(money * (specialRate / 100.0));   // 특별이자추가, 부모클래스 Deposit에 money 특별이자추가 저장
+	}
+};
+
+
+/*
+ * 클래스 이름: AccountHandler
+ * 클래스 유형: 컨트롤(Control) 클래스
+ */
+
+class AccountHandler
+{
+private:
+	Account* accArr[100];	//Account 클래스를 AccountHandler 안에 선언해줌으로써 포함관계가 성립된다. AccountHandler에서도 Account 클래스의 public 변수들에 접근이 가능하며 Account 자료형의 배열을 생성해준다.
+	int accNum;	//계좌의 수를 나타내는 변수 
+
+public:
+	AccountHandler();
+	void ShowMenu(void) const;
+	void MakeAccount(void);
+	void DepositMoney(void);
+	void WithdrawMoney(void);
+	void ShowAllAccInfo(void) const;
+	~AccountHandler();
+
+protected:
+	void MakeNormalAccount(void);
+	void MakeCreditAccount(void);
+};
+
+void AccountHandler::ShowMenu(void) const // 메뉴 목록 출력하는 함수.
+{
+	cout << "-----Menu------" << endl;
+	cout << "1. 계좌개설" << endl;
+	cout << "2. 입    금" << endl;
+	cout << "3. 출    금" << endl;
+	cout << "4. 계좌정보 전체 출력" << endl;
+	cout << "5. 프로그램 종료" << endl;
+}
+
+void AccountHandler::MakeAccount(void)// 계좌 개설 하는 함수.
+{
+	int sel; //메뉴선택변수
+	cout << "[계좌종류선택]" << endl;
+	cout << "1.보통예금계좌 ";
+	cout << "2.신용신뢰계좌 " << endl;
+	cout << "선택: ";
+	cin >> sel;
+
+	if (sel == NORMAL) //sel 의 값이 NORMAL(1)이면 보통계좌 함수 호출
+		MakeNormalAccount();
+	else//sel  값이 NORMAL(1)이 아니면 특별계좌 함수 호출
+		MakeCreditAccount();
+}
+
+void AccountHandler::MakeNormalAccount(void) // 보통계좌 개설 하는 함수.
+{
+	int id; // 아이디 입력받는 변수
+	char name[NAME_LEN]; // 이름 입력받는 변수. NAME_LEN은 전역변수로 20이다.
+	int balance; // 잔액 입력받는 변수
+	int interRate;//이자율을 입력 받는 변수
+
+	cout << "[보통예금계좌 개설]" << endl;
+	cout << "계좌ID: ";	cin >> id;
+	cout << "이  름: ";	cin >> name;
+	cout << "입금액: ";	cin >> balance;
+	cout << "이자율: ";	cin >> interRate;
+	cout << endl;
+
+	accArr[accNum++] = new NormalAccount(id, balance, name, interRate);// account를 저장하는 배열에 생성자로 생성된 클래스를 저장하여 준다. 그리고 계좌 수를 1번 늘려준다.
+}
+
+void AccountHandler::MakeCreditAccount(void)// 특별 계좌 개설 하는 함수.
+{
+	int id;// 아이디 입력받는 변수
+	char name[NAME_LEN];// 이름 입력받는 변수. NAME_LEN은 전역변수로 20이다.
+	int balance;// 잔액 입력받는 변수
+	int interRate;//이자율을 입력 받는 변수
+	int creditLevel;//신용 등급을 입력 받는 변수
+
+	cout << "[신용신뢰계좌 개설]" << endl;
+	cout << "계좌ID: ";	cin >> id;
+	cout << "이  름: ";	cin >> name;
+	cout << "입금액: ";	cin >> balance;
+	cout << "이자율: ";	cin >> interRate;
+	cout << "신용등급(1toA, 2toB, 3toC): ";	cin >> creditLevel;
+	cout << endl;
+
+	switch (creditLevel)//신용등급
+	{
+	case 1://case 1 일때 신용등급이 LEVEL_A(7)인새로운 객체를 만듬
+		accArr[accNum++] = new HighCreditAccount(id, balance, name, interRate, LEVEL_A);
+		break;
+	case 2://case 2 일때 신용등급이 LEVEL_B(4)인새로운 객체를 만듬
+		accArr[accNum++] = new HighCreditAccount(id, balance, name, interRate, LEVEL_B);
+		break;
+	case 3://cas e3 1 일때 신용등급이 LEVEL_C(2)인새로운 객체를 만듬
+		accArr[accNum++] = new HighCreditAccount(id, balance, name, interRate, LEVEL_C);
+	}
+}
+
+
+void AccountHandler::DepositMoney(void)
+{
+	int money;// 돈을 저장하는 변수
+	int id;// 아이디 입력받는 변수
+	cout << "[입    금]" << endl;
+	cout << "계좌ID: ";	cin >> id;// id값을 입력받는다.
+	cout << "입금액: ";	cin >> money;// 입금할 값을 입력받는다.
+
+	for (int i = 0; i < accNum; i++)// 계좌 개설된 수만큼 반복을 한다.
+	{
+		if (accArr[i]->GetAccID() == id)// 계좌를 저장한 i번째 클래스의 GetAccID()함수에 들어간다. GetAccID()는 ID의 값을 반환해주는 함수이고 이의 갑싱 입력받은 id의 값과 동일하다면 실행된다.
+		{
+			accArr[i]->Deposit(money); //실행이 된 후 i번째 클래스 배열의 Deposit함수에 들어간 후 입력받았던 money의 값을 i번째 배열 잔고에 입금한다.
+			cout << "입금완료" << endl << endl;
+			return;// if문이 실행되었다면 return하여 함수 종료.
+		}
+	}
+	cout << "유효하지 않은 ID 입니다." << endl << endl;// if문이 실행되지 않았다면 저장되어있는 id의 값과 입력받은 id의 값이 일치하는 것이 없다는 뜻이므로 없는 id라고 출력한다. 
+}
+
+void AccountHandler::WithdrawMoney(void)// 출금하는 함수.
+{
+	int money;// 돈을 저장하는 변수
+	int id;// 아이디 번호를 저장하는 변수
+	cout << "[출    금]" << endl;
+	cout << "계좌ID: ";	cin >> id; //id값 입력받는다.
+	cout << "출금액: ";	cin >> money;// 출금할 값 입력받는다.
+
+	for (int i = 0; i < accNum; i++)// 입력받은 계좌의 수만큼 반복한다.
+	{
+		if (accArr[i]->GetAccID() == id)// i번째 클래스 배열의 GetAccID()배열에서 아이디를 받은 후 입력받은 id와 일치하는 것이 있는지 비교한 후 있으면 if문 실행한다.
+		{
+			if (accArr[i]->Withdraw(money) == 0)// i번째 클래스 배열의 Withdraw()함수에 들어가고 출금액이 부족하여 0을 반환받았을 경우 if문 실행한다.
+			{
+				cout << "잔액부족" << endl << endl;// 잔액이 부족함을 출력한다.
+				return;//잔액 부족이므로 함수를 종료한다.
+			}
+
+			cout << "출금완료" << endl << endl;// 잔액이 있다는 뜻이므로 출금이 완료 되었다.
+			return; / 함수 종료
+		}
+	}
+	cout << "유효하지 않은 ID 입니다." << endl << endl;// 입력된 id와 동일한 id가 없을 경우 출력한다.
+}
+
+AccountHandler::AccountHandler() : accNum(0) // 객체를 만들 때 필요한 생성자이며 생성과 동시에 계좌의 수를 나타내는 변수인 accNum을 0으로 초기화한다. 
+{  }
+
+void AccountHandler::ShowAllAccInfo(void) const// 계좌의 정보를 출력하는 함수이다.
+{
+	for (int i = 0; i < accNum; i++)// 계설된 계좌의 수만큼 반복한다.
+	{
+		accArr[i]->ShowAccInfo();//i번째 클래스 배열의 ShowAccInfo()함수에 들어가서 계좌 정보를 출력한다.
+		cout << endl;
+	}
+}
+
+AccountHandler::~AccountHandler()// 소멸자이다.
+{
+	for (int i = 0; i < accNum; i++)
+		delete accArr[i];//계좌의 수만큼 반복을 하면서 배열을 소멸시킨다
+}
+
+
+/*
+ * 컨트롤 클래스 AccountHandler 중심의 main 함수
+ */
+
+int main(void)
+{
+	AccountHandler manager; //AccountHandle 클래스형이 manager 객체 생성
+	int choice; //입력받을 숫자를 저장하는 변수(정수형)
+
+	while (1)// 반복한다.
+	{
+		manager.ShowMenu();// 메뉴 목록을 출력해주는 함수이며 메뉴 목록을 출력해준다.
+		cout << "선택: ";
+		cin >> choice;// 메뉴 목록 중 하나를 선택하여 입력받는다.
+		cout << endl; // 줄바꿈
+
+
+		switch (choice) // 선택한 메뉴(숫자)를 입력받아서 실행한다.
+		{// 열거형을 이용하여 MAKE부터 EXIT까지 1~5로 저장한다.
+		case MAKE: //1을 선택하였을 경우
+			manager.MakeAccount();// 계좌 개설 함수로 들어간다
+			break; // break를 쓰지 않으면 밑의 case문을 다 실행하기 때문에 break를 작성하여 switch문을 탈출한다.
+		case DEPOSIT://2를 선택하였을 경우
+			manager.DepositMoney();// 입금하는 함수로 들어간다.
+			break;
+		case WITHDRAW: //3을 선택하였을 경우
+			manager.WithdrawMoney();// 출력하는 함수로 들어간다.
+			break;
+		case INQUIRE: // 4를 선택하였을 경우
+			manager.ShowAllAccInfo();// 계좌 정보를 출력해주는 함수로 들어간다.
+			break;
+		case EXIT: // 5를 선택하였을 경우
+			return 0; // 프로그램을 종료한다
+		default:
+			cout << "Illegal selection.." << endl;// 문구 출력 후 switch문을 시작부터 다시 시작한다.
+		}
+	}
+	return 0;
